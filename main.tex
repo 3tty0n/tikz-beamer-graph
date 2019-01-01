@@ -1,0 +1,116 @@
+\documentclass[tikz]{beamer}
+
+\usetheme{Madrid}
+
+\usepackage{tikz}
+\usepackage{pxpgfmark}
+\usepackage{verbatim}
+
+\usetikzlibrary{arrows}
+\usetikzlibrary{shapes}
+\usetikzlibrary{shapes.callouts}
+\usetikzlibrary{fit}
+\usetikzlibrary{positioning}
+
+
+\tikzset{
+  notice/.style = {rectangle callout, fill=red!80, white, callout absolute pointer={#1}}
+}
+
+\title{Sample title}
+\author{Anonymous}
+\institute{Tokyo Institute of Technology}
+\date{2018}
+
+\begin{document}
+
+\pgfdeclarelayer{external}
+\pgfdeclarelayer{background}
+\pgfsetlayers{external,background,main}
+
+\frame{\titlepage}
+
+\begin{frame}
+  \frametitle{Slide 1}
+
+  \tikzstyle{vertex}=[circle,fill=black!25,minimum size=20pt,inner sep=0pt]
+  \tikzstyle{selected vertex} = [vertex, fill=red!24]
+  \tikzstyle{edge} = [draw,thick,-]
+  \tikzstyle{arrow} = [draw,thick,->]
+  \tikzstyle{weight} = [font=\small]
+  \tikzstyle{selected edge} = [draw,line width=5pt,-,red!50]
+  \tikzstyle{ignored edge} = [draw,line width=5pt,-,black!20]
+  \tikzstyle{selected arrow} = [draw,->,line width=4.0pt,red!50]
+
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[auto, swap, node distance=1.2cm, remember picture]
+
+      \node[vertex] (A) {A};
+      \node[vertex, below left of=A] (B) {B};
+      \node[vertex, below right of=A] (C) {C};
+      \node[vertex, below of=B] (D) {D};
+      \node[vertex, below of=D] (E) {E};
+      \node[vertex, below of=C] (F) {F};
+      \node[vertex, below of=F] (G) {G};
+      \node[vertex, below right of=E] (I) {I};
+      \node[vertex, below of=I] (J) {J};
+
+      \node[vertex, above right of=G, node distance=2.0cm] (A') {A'};
+      \node[vertex, below right of=G, node distance=2.0cm] (B') {B'};
+
+      \draw[arrow] (A) -- (B);
+      \draw[arrow] (A) -- (C);
+      \draw[arrow] (B) -- (D);
+      \draw[arrow] (D) -- (E);
+      \draw[arrow] (E) -- (I);
+      \draw[arrow] (C) -- (F);
+      \draw[arrow] (F) -- (G);
+      \draw[arrow] (G) -- (I);
+      \draw[arrow] (I) -- (J);
+
+      \draw[arrow] (G) -- (A');
+      \draw[arrow] (A') -- (B');
+      \draw[arrow] (B') -- (G);
+
+      \begin{pgfonlayer}{background}
+        \pause
+        \node[notice={(A.west)}, left=of A] {{\small Store env.}};
+        \pause
+        \draw[selected arrow] (A) -- (B);
+        \pause
+        \draw[selected arrow] (B) -- (D);
+        \pause
+        \draw[selected arrow] (D) -- (E);
+        \pause
+        \draw[selected arrow] (E) -- (I);
+        \pause
+        \draw[selected arrow] (I) -- (J);
+        \pause
+        \node[notice={(J.west)}, left=of J] {{\small Rollback to A}};
+        \pause
+        \node[notice={(A.east)}, right=of A] {{\small Restore env.}};
+        \pause
+        \draw[selected arrow] (A) -- (C);
+        \pause
+        \draw[selected arrow] (C) -- (F);
+        \pause
+        \draw[selected arrow] (F) -- (G);
+        \pause
+        \node[notice={(G.east)}, right=of G] {{\small Remain call inst.}};
+        \pause
+        \draw[selected arrow] (G) -- (I);
+        \pause
+        \draw[selected arrow] (I) -- (J);
+        \onslide<1->
+      \end{pgfonlayer}
+
+      \begin{pgfonlayer}{external}
+        \node [draw,rectangle,fit=(A') (B'), label=above:{\small other func.}] {};
+      \end{pgfonlayer}
+
+
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+\end{document}
