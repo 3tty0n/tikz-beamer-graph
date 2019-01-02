@@ -17,16 +17,16 @@
   notice/.style = {rectangle callout, fill=red!80, white, callout absolute pointer={#1}}
 }
 
-\title{Sample title}
+\title{Meta-hybrid JIT approach to Path Divergence Problem}
 \author{Anonymous}
 \institute{Tokyo Institute of Technology}
-\date{2018}
+\date{2019}
 
 \begin{document}
 
-\pgfdeclarelayer{external}
 \pgfdeclarelayer{background}
-\pgfsetlayers{external,background,main}
+\pgfdeclarelayer{background2}
+\pgfsetlayers{background2,background,main}
 
 \frame{\titlepage}
 
@@ -42,9 +42,10 @@
   \tikzstyle{ignored edge} = [draw,line width=5pt,-,black!20]
   \tikzstyle{selected arrow} = [draw,->,line width=4.0pt,red!50]
 
+  \begin{minipage}[c]{0.64\textwidth}
   \begin{figure}
     \centering
-    \begin{tikzpicture}[auto, swap, node distance=1.2cm, remember picture]
+    \begin{tikzpicture}[auto, swap, node distance=1.5cm]
 
       \node[vertex] (A) {A};
       \node[vertex, below left of=A] (B) {B};
@@ -56,26 +57,19 @@
       \node[vertex, below right of=E] (I) {I};
       \node[vertex, below of=I] (J) {J};
 
-      \node[vertex, above right of=G, node distance=2.0cm] (A') {A'};
-      \node[vertex, below right of=G, node distance=2.0cm] (B') {B'};
+      \node[vertex, above right of=G, node distance=2.0cm] (K) {K};
+      \node[vertex, below right of=G, node distance=2.0cm] (L) {L};
 
-      \draw[arrow] (A) -- (B);
-      \draw[arrow] (A) -- (C);
-      \draw[arrow] (B) -- (D);
-      \draw[arrow] (D) -- (E);
-      \draw[arrow] (E) -- (I);
-      \draw[arrow] (C) -- (F);
-      \draw[arrow] (F) -- (G);
-      \draw[arrow] (G) -- (I);
-      \draw[arrow] (I) -- (J);
+      \foreach \x/\y in {A/B, A/C, B/D, D/E, E/I, C/F, F/G, G/I, I/J, G/K, K/L, L/G}
+      \draw[arrow] (\x) -- (\y);
 
-      \draw[arrow] (G) -- (A');
-      \draw[arrow] (A') -- (B');
-      \draw[arrow] (B') -- (G);
+      \draw[arrow] (I) edge[auto, bend left=80] (A);
+
+      \node [draw,rectangle,fit=(K) (L), label=above:{\small other func.}] {};
 
       \begin{pgfonlayer}{background}
         \pause
-        \node[notice={(A.west)}, left=of A] {{\small Store env.}};
+        \node[notice={(A.west)}, left=0.5cm of A] {{\small Store env.}};
         \pause
         \draw[selected arrow] (A) -- (B);
         \pause
@@ -85,11 +79,13 @@
         \pause
         \draw[selected arrow] (E) -- (I);
         \pause
+        \node[notice={(I.west)}, left=1.0cm of I, text width=2.8cm] {{\footnotesize Compiled to: \\ (1) if inst. \\ (2) jump inst. to A}};
+        \pause
         \draw[selected arrow] (I) -- (J);
         \pause
-        \node[notice={(J.west)}, left=of J] {{\small Rollback to A}};
+        \node[notice={(J.west)}, left=0.5cm of J] {{\small Rollback to A}};
         \pause
-        \node[notice={(A.east)}, right=of A] {{\small Restore env.}};
+        \node[notice={(A.east)}, right=0.5 cm of A] {{\small Restore env.}};
         \pause
         \draw[selected arrow] (A) -- (C);
         \pause
@@ -97,7 +93,7 @@
         \pause
         \draw[selected arrow] (F) -- (G);
         \pause
-        \node[notice={(G.east)}, right=of G] {{\small Remain call inst.}};
+        \node[notice={(G.south)}, below=1cm of G] {{\small Remain}};
         \pause
         \draw[selected arrow] (G) -- (I);
         \pause
@@ -105,12 +101,39 @@
         \onslide<1->
       \end{pgfonlayer}
 
-      \begin{pgfonlayer}{external}
-        \node [draw,rectangle,fit=(A') (B'), label=above:{\small other func.}] {};
-      \end{pgfonlayer}
-
-
     \end{tikzpicture}
   \end{figure}
+  \end{minipage}
+  \begin{minipage}[c]{0.35\textwidth}
+    \begin{figure}
+      \centering
+      \begin{tikzpicture}[auto, scale=0.8, swap, node distance=1.2cm]
+        \pause
+        \node[vertex] (A) {A};
+        \node[vertex, below left of=A] (B) {B};
+        \node[vertex, below right of=A] (C) {C};
+        \node[vertex, below of=B] (D) {D};
+        \node[vertex, below of=D] (E) {E};
+        \node[vertex, below of=C] (F) {F};
+        \node[vertex, below of=F] (G) {G};
+        \node[vertex, below of=E] (I) {I};
+        \node[vertex, below of=G] (I') {I};
+        \node[vertex, below of=I] (J) {J};
+        \node[vertex, below of=I'] (J') {J};
+
+        \node [draw, rectangle,
+        fit=(A)(B)(C)(D)(E)(F)(G)(I)(J)(I')(J'),
+        label=above:{\small trace}] {};
+
+        \foreach \x/\y in {A/B, B/D, D/E, E/I, I/J, A/C, C/F, F/G, G/I', I'/J'}
+        \draw[arrow] (\x) -- (\y);
+
+        \draw[arrow] (I) edge[bend left=65] (A);
+        \draw[arrow] (I') edge[bend right=65] (A);
+
+        \onslide<1->
+      \end{tikzpicture}
+    \end{figure}
+  \end{minipage}
 \end{frame}
 \end{document}
